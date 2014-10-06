@@ -16,18 +16,32 @@ main = do
     get "/" $ do
       S.html . renderHtml $ do getHome
 
+    get "/archives/" $ do
+      S.html . renderHtml $ do getArchives
+
+
 getHome :: Html
 getHome = do
   H.head $ do
     meta ! charset "UTF-8"
     H.title "Comics, Man"
-    getBootstrap
-    H.style ".main {max-width: 500px;margin-bottom: 3em;} .jumbotron {background-color: transparent;}"
+    getCSS
   H.body $ do
     H.div ! class_ "container-fluid main" $ do
       getJumbotron
       getNav
       getLatest
+
+
+getArchives :: Html
+getArchives = do
+  H.head $ do
+    meta ! charset "UTF-8"
+    H.title "Comics, Man | Archives"
+    getCSS
+  H.body $ do
+    H.div ! class_ "container-fluid main" $ do
+      H.p "hello"
 
 
 getJumbotron :: Html
@@ -38,7 +52,7 @@ getNav :: Html
 getNav = do
   H.div ! class_ "nav nav-pills" $ do
     li ! class_ "active" $ a ! href "/" $ "Latest"
-    li $ a ! href "/everything/" $ "Everything"
+    li $ a ! href "/archives/" $ "Everything"
     li $ a ! href "/follow/" $ "Follow"
 
 
@@ -50,7 +64,15 @@ getLatest = do
   img ! src "http://www.explosm.net/db/files/Comics/Dave/EVE.png" ! alt "" ! class_ "img-responsive"
   
           
+getCSS :: Html
+getCSS = do
+  link ! href "http://bootswatch.com/journal/bootstrap.min.css" ! rel "stylesheet"
+  H.style ".main {max-width: 500px;margin-bottom: 3em;} .jumbotron {background-color: transparent;}"
 
 
 getBootstrap :: Html
 getBootstrap = link ! href "http://bootswatch.com/journal/bootstrap.min.css" ! rel "stylesheet"
+
+
+getCustomCSS :: Html
+getCustomCSS = H.style ".main {max-width: 500px;margin-bottom: 3em;} .jumbotron {background-color: transparent;}"
