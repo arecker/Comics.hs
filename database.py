@@ -14,7 +14,7 @@ c = conn.cursor()
 
 c.execute(
 	"""
-	CREATE TABLE comics(DATETIME created, title, url)
+	CREATE TABLE comics(created, title, link)
 	"""
 )
 
