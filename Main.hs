@@ -25,6 +25,12 @@ getAllComics connection = do
 	query_ connection q :: IO [Comic]
 
 
+getComic :: Connection -> String -> IO [Comic]
+getComic connection title = do
+	let q = stringToQuery ("SELECT title, link FROM comics WHERE title = '" ++ title ++ "'")
+	query_ connection q :: IO [Comic]
+
+
 getTitle :: Comic -> String
 getTitle (Comic { title=t, link=l}) = t
 
