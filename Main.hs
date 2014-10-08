@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Web.Scotty
 import Control.Applicative
 import Database.SQLite.Simple
 import Database.SQLite.Simple.FromRow
@@ -7,10 +8,11 @@ import qualified Data.Text as T
 import Control.Monad
 
 
-data Comic = Comic { title :: String, link :: String } deriving (Show)
+
+data Comic = Comic { id :: Int, created :: String, title :: String, link :: String } deriving (Show)
 
 instance FromRow Comic where
-	fromRow = Comic <$> field <*> field
+	fromRow = Comic <$> field <*> field <*> field <*> field
 
 
 main = do
@@ -21,14 +23,22 @@ main = do
 
 getAllComics :: Connection -> IO [Comic]
 getAllComics connection = do
-	let q = stringToQuery "SELECT title, link FROM comics"
+	let q = stringToQuery "SELECT id, created, title, link FROM comics"
 	query_ connection q :: IO [Comic]
 
 
-getComic :: Connection -> String -> IO [Comic]
-getComic connection title = do
-	let q = stringToQuery ("SELECT title, link FROM comics WHERE title = '" ++ title ++ "'")
-	query_ connection q :: IO [Comic]
+getComicById :: Connection -> Int -> IO [Comic]
+getComicById connection id = do
+	let q = stringToQuery ("SELECT id, created, title, link FROM comics WHERE id = '" ++ (show id) ++ "'")
+	results <- query_ connection q :: IO [Comic]
+	return results
+
+
+getLatestComic :: Connection -> IO [Comic]
+getLatestComic connection = do
+	let q = stringToQuery ("SELECT id, created, title, link FROM comics ORDER BY id DESC LIMIT 1")
+	results <- query_ connection q :: IO [Comic]
+	return results
 
 
 getTitle :: Comic -> String

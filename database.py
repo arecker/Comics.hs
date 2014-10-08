@@ -14,7 +14,7 @@ c = conn.cursor()
 
 c.execute(
 	"""
-	CREATE TABLE comics(created, title, link)
+	CREATE TABLE comics(id Integer UNIQUE, created, title, link)
 	"""
 )
 
@@ -24,8 +24,10 @@ test_data = [
 	('Dad, I keep having nightmares', 'http://www.explosm.net/db/files/Comics/Dave/comicggg1.png')
 ]
 
+i = 1
 for title, link in test_data:
-	c.execute("INSERT INTO comics select CURRENT_TIMESTAMP, '%s', '%s'" % (title, link))
+	c.execute("INSERT INTO comics select '%i', CURRENT_DATE, '%s', '%s'" % (i, title, link))
+	i = i + 1
 
 conn.commit()
 conn.close()
