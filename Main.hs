@@ -27,31 +27,23 @@ instance FromRow Comic where
 main = do
   scotty 3000 $ do
     get "/" $ do
-      S.html . renderHtml $ do getHome
+      title <- lift getLatestManager
+      S.html . renderHtml $ do 
+        getHome title
 
     get "/archives/" $ do
       S.html . renderHtml $ do getArchives
 
-
-    get "/:id/" $ do
-      id <- S.param "id"
-      text id
-
-    get "/test" $ do
-      title <- lift dbHelper
-      text title
+    --get "/test" $ do
+    --  title <- lift dbHelper
+    --  text title
 
     notFound $ do
       text "404, man"
 
 
-doIt str = do
-  x <- str
-  return str
-
-
-getHome :: Html
-getHome = do
+--getHome :: Html
+getHome variable = do
   H.head $ do
     meta ! charset "UTF-8"
     H.title "Comics, Man"
@@ -61,7 +53,7 @@ getHome = do
       getJumbotron
       getNav
       getLatest
-
+      H.p (toHtml variable)
 
 getArchives :: Html
 getArchives = do
@@ -76,9 +68,9 @@ getArchives = do
 
 
 -- DB  -------------------
-dbHelper = do
+getLatestManager = do
   c <- DB.open "comics.db"
-  x <- (getComicById c 1)
+  x <- (getLatestComic c)
   return $ TL.pack (getTitle (Prelude.head (x)))
 
 
