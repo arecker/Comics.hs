@@ -28,7 +28,7 @@ main = do
     get "/" $ do
       comic <- lift getLatestManager
       S.html . renderHtml $ do 
-        getHome comic
+        getComic comic
 
     get "/archives/" $ do
       comics <- lift getArchivesManager
@@ -46,15 +46,23 @@ main = do
           H.div ! class_ "container-fluid main" $ do
             getJumbotron
             getNav
-            H.p $ "social networking blah blah"
+            H.h1 ! class_ "lead" $ "Social netoworking blah blah blah"
+
+
+    get "/:id/" $ do
+      id <- S.param "id"
+      comic <- lift (getComicByIDManager id)
+      S.html . renderHtml $ do
+        getComic comic
+
 
 
     notFound $ do
       text "404, man"
 
 
-getHome :: Comic -> Html
-getHome comic = do
+getComic :: Comic -> Html
+getComic comic = do
   H.head $ do
     meta ! charset "UTF-8"
     H.title "Comics, Man"
@@ -63,7 +71,8 @@ getHome comic = do
     H.div ! class_ "container-fluid main" $ do
       getJumbotron
       getNav
-      getLatest comic
+      renderComic comic
+
 
 getArchives :: [Comic] -> Html
 getArchives comics = do
@@ -95,15 +104,23 @@ getArchivesManager = do
   return x
 
 
+getComicByIDManager :: TL.Text -> IO Comic
+getComicByIDManager id = do
+  c <- DB.open "comics.db"
+  x <- (getComicByID c (TL.unpack id))
+  close c
+  return (head x)
+
+
 getAllComics :: Connection -> IO [Comic]
 getAllComics connection = do
-  let q = stringToQuery "SELECT id, created, title, link FROM comics"
+  let q = stringToQuery "SELECT id, created, title, link FROM comics ORDER BY id DESC"
   DB.query_ connection q
 
 
-getComicById :: Connection -> Int -> IO [Comic]
-getComicById connection id = do
-  let q = stringToQuery ("SELECT id, created, title, link FROM comics WHERE id = '" ++ show id ++ "'")
+getComicByID :: Connection -> String -> IO [Comic]
+getComicByID connection id = do
+  let q = stringToQuery ("SELECT id, created, title, link FROM comics WHERE id = '" ++ id ++ "'")
   DB.query_ connection q
 
 
@@ -147,8 +164,8 @@ getNav = do
     li $ a ! href "/follow/" $ "Follow"
 
 
-getLatest :: Comic -> Html
-getLatest comic = do
+renderComic :: Comic -> Html
+renderComic comic = do
   H.div ! class_ "page-header" $ do
       H.h1 ! class_ "lead" $ (toHtml (TL.pack (getTitle comic)))
       H.p (toHtml (TL.pack (getDate comic)))
