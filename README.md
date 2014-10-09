@@ -1,6 +1,8 @@
 Comics
 ======
 
+![travis](http://travis-ci.org/arecker/Comics.svg?branch=master)
+
 A site for comics (obviously)
 
 This is my geek week 2014 project.  It's a website written in haskell.
