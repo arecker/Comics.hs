@@ -21,6 +21,7 @@ executable Comics
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.6 && <4.8
+                     , transformers
                      , text
                      , scotty
                      , blaze-html
