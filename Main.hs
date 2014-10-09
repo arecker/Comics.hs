@@ -13,9 +13,10 @@ import Control.Applicative
 import Database.SQLite.Simple
 import Database.SQLite.Simple.FromRow
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
 import qualified Database.SQLite.Simple as DB
 import Control.Monad
-
+import Control.Monad.Trans.Class (lift)
 
 data Comic = Comic { id :: Int, created :: String, title :: String, link :: String } deriving (Show)
 
@@ -37,7 +38,7 @@ main = do
       text id
 
     get "/test" $ do
-      title <- dbHelper
+      title <- lift dbHelper
       text title
 
     notFound $ do
@@ -78,7 +79,7 @@ getArchives = do
 dbHelper = do
   c <- DB.open "comics.db"
   x <- (getComicById c 1)
-  return (getTitle (Prelude.head (x)))
+  return $ TL.pack (getTitle (Prelude.head (x)))
 
 
 getAllComics :: Connection -> IO [Comic]
