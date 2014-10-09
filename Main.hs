@@ -2,9 +2,8 @@
 
 import Web.Scotty
 import Data.Monoid (mconcat)
-import Control.Monad (forM_)
-import Text.Blaze.Html5
-import Text.Blaze.Html5.Attributes
+import Text.Blaze.Html5 hiding (head, title)
+import Text.Blaze.Html5.Attributes hiding (title)
 import qualified Web.Scotty as S
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
@@ -68,43 +67,33 @@ getArchives = do
 
 
 -- DB  -------------------
+getLatestManager :: IO TL.Text
 getLatestManager = do
   c <- DB.open "comics.db"
-  x <- (getLatestComic c)
-  return $ TL.pack (getTitle (Prelude.head (x)))
+  x <- getLatestComic c
+  return $ TL.pack (title (head x))
 
 
 getAllComics :: Connection -> IO [Comic]
 getAllComics connection = do
   let q = stringToQuery "SELECT id, created, title, link FROM comics"
-  DB.query_ connection q :: IO [Comic]
+  DB.query_ connection q
 
 
 getComicById :: Connection -> Int -> IO [Comic]
 getComicById connection id = do
-  let q = stringToQuery ("SELECT id, created, title, link FROM comics WHERE id = '" ++ (show id) ++ "'")
-  results <- DB.query_ connection q :: IO [Comic]
-  return results
+  let q = stringToQuery ("SELECT id, created, title, link FROM comics WHERE id = '" ++ show id ++ "'")
+  DB.query_ connection q
 
 
 getLatestComic :: Connection -> IO [Comic]
 getLatestComic connection = do
-  let q = stringToQuery ("SELECT id, created, title, link FROM comics ORDER BY id DESC LIMIT 1")
-  results <- DB.query_ connection q :: IO [Comic]
-  return results
+  let q = stringToQuery "SELECT id, created, title, link FROM comics ORDER BY id DESC LIMIT 1"
+  DB.query_ connection q
 
 
-stringToQuery :: [Char] -> Query
+stringToQuery :: String -> Query
 stringToQuery a = Query (T.pack a)
-
-
--- Object Helpers --------
-getTitle :: Comic -> String
-getTitle (Comic { Main.title=t, Main.link=l}) = t
-
-
-getLink :: Comic -> String
-getLink (Comic { Main.title=t, Main.link=l}) = l
 
 
 -- HTML Helpers ----------
