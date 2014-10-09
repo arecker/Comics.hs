@@ -70,6 +70,7 @@ getLatestManager :: IO Comic
 getLatestManager = do
   c <- DB.open "comics.db"
   x <- (getLatestComic c)
+  close c
   return (Prelude.head (x))
 
 
@@ -77,6 +78,7 @@ getArchivesManager :: IO [Comic]
 getArchivesManager = do
   c <- DB.open "comics.db"
   x <- (getAllComics c)
+  close c
   return x
 
 
