@@ -27,23 +27,22 @@ instance FromRow Comic where
 main = do
   scotty 3000 $ do
     get "/" $ do
-      title <- lift getLatestManager
+      comic <- lift getLatestManager
       S.html . renderHtml $ do 
-        getHome title
+        getHome comic
 
     get "/archives/" $ do
-      S.html . renderHtml $ do getArchives
+      comics <- lift getArchivesManager
+      S.html . renderHtml $ do 
+        getArchives comics
 
-    --get "/test" $ do
-    --  title <- lift dbHelper
-    --  text title
 
     notFound $ do
       text "404, man"
 
 
---getHome :: Html
-getHome variable = do
+getHome :: Comic -> Html
+getHome comic = do
   H.head $ do
     meta ! charset "UTF-8"
     H.title "Comics, Man"
@@ -52,11 +51,10 @@ getHome variable = do
     H.div ! class_ "container-fluid main" $ do
       getJumbotron
       getNav
-      getLatest
-      H.p (toHtml variable)
+      getLatest comic
 
-getArchives :: Html
-getArchives = do
+getArchives :: [Comic] -> Html
+getArchives comics = do
   H.head $ do
     meta ! charset "UTF-8"
     H.title "Comics, Man | Archives"
@@ -65,13 +63,22 @@ getArchives = do
     H.div ! class_ "container-fluid main" $ do
       getJumbotron
       getNav
+      getTable comics
 
 
 -- DB  -------------------
+getLatestManager :: IO Comic
 getLatestManager = do
   c <- DB.open "comics.db"
   x <- (getLatestComic c)
-  return $ TL.pack (getTitle (Prelude.head (x)))
+  return (Prelude.head (x))
+
+
+getArchivesManager :: IO [Comic]
+getArchivesManager = do
+  c <- DB.open "comics.db"
+  x <- (getAllComics c)
+  return x
 
 
 getAllComics :: Connection -> IO [Comic]
@@ -100,11 +107,19 @@ stringToQuery a = Query (T.pack a)
 
 -- Object Helpers --------
 getTitle :: Comic -> String
-getTitle (Comic { Main.title=t, Main.link=l}) = t
+getTitle (Comic { Main.title=t, Main.link=l, Main.created=d }) = t
 
 
 getLink :: Comic -> String
-getLink (Comic { Main.title=t, Main.link=l}) = l
+getLink (Comic { Main.title=t, Main.link=l, Main.created=d }) = l
+
+
+getDate :: Comic -> String
+getDate (Comic { Main.title=t, Main.link=l, Main.created=d }) = d
+
+
+getID :: Comic -> Int
+getID (Comic { Main.title=t, Main.link=l, Main.created=d, Main.id=i }) = i
 
 
 -- HTML Helpers ----------
@@ -115,19 +130,34 @@ getJumbotron = H.div ! class_ "jumbotron" $ h1 "Comics, man."
 getNav :: Html
 getNav = do
   H.div ! class_ "nav nav-pills" $ do
-    li ! class_ "active" $ a ! href "/" $ "Latest"
+    li ! class_ "" $ a ! href "/" $ "Latest"
     li $ a ! href "/archives/" $ "Everything"
     li $ a ! href "/follow/" $ "Follow"
 
 
-getLatest :: Html
-getLatest = do
+getLatest :: Comic -> Html
+getLatest comic = do
   H.div ! class_ "page-header" $ do
-      h1 ! class_ "lead" $ "Mitochondrial Eve"
-      p "October 5, 2014"
-  img ! src "http://www.explosm.net/db/files/Comics/Dave/EVE.png" ! alt "" ! class_ "img-responsive"
+      H.h1 ! class_ "lead" $ (toHtml (TL.pack (getTitle comic)))
+      H.p (toHtml (TL.pack (getDate comic)))
+  img ! alt "" ! class_ "img-responsive" ! src (toValue(getLink comic))
   
-          
+
+getTable :: [Comic] -> Html
+getTable comics = do
+  H.div ! class_ "page-header" $ do
+    H.h1 ! class_ "lead" $ "Comic Archives"
+  H.table ! class_ "table" $ do
+    toHtml (Prelude.map parseComicIntoArchive comics)
+ 
+
+parseComicIntoArchive :: Comic -> Html
+parseComicIntoArchive comic = do
+  H.tr $ do
+    H.td $ H.a ! href  (toValue(mconcat ["/", show (getID comic)])) $ (toHtml (TL.pack (getTitle comic)))
+    H.td $ (toHtml (TL.pack (getDate comic)))
+
+
 getCSS :: Html
 getCSS = do
   H.link ! href "http://bootswatch.com/journal/bootstrap.min.css" ! rel "stylesheet"
