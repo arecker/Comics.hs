@@ -36,6 +36,19 @@ main = do
         getArchives comics
 
 
+    get "/follow/" $ do
+      S.html . renderHtml $ do
+        H.head $ do
+          meta ! charset "UTF-8"
+          H.title "Comics, Man"
+          getCSS
+        H.body $ do
+          H.div ! class_ "container-fluid main" $ do
+            getJumbotron
+            getNav
+            H.p $ "social networking blah blah"
+
+
     notFound $ do
       text "404, man"
 
