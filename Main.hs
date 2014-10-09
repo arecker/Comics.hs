@@ -32,6 +32,23 @@ main = do
       S.html . renderHtml $ do getArchives
 
 
+    get "/:id/" $ do
+      id <- S.param "id"
+      text id
+
+    get "/test" $ do
+      title <- dbHelper
+      text title
+
+    notFound $ do
+      text "404, man"
+
+
+doIt str = do
+  x <- str
+  return str
+
+
 getHome :: Html
 getHome = do
   H.head $ do
@@ -55,9 +72,15 @@ getArchives = do
     H.div ! class_ "container-fluid main" $ do
       getJumbotron
       getNav
-      H.p "hello"
+
 
 -- DB  -------------------
+dbHelper = do
+  c <- DB.open "comics.db"
+  x <- (getComicById c 1)
+  return (getTitle (Prelude.head (x)))
+
+
 getAllComics :: Connection -> IO [Comic]
 getAllComics connection = do
   let q = stringToQuery "SELECT id, created, title, link FROM comics"
@@ -90,8 +113,8 @@ getTitle (Comic { Main.title=t, Main.link=l}) = t
 getLink :: Comic -> String
 getLink (Comic { Main.title=t, Main.link=l}) = l
 
--- HTML Helpers ----------
 
+-- HTML Helpers ----------
 getJumbotron :: Html
 getJumbotron = H.div ! class_ "jumbotron" $ h1 "Comics, man."
 
