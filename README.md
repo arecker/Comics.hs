@@ -1,7 +1,7 @@
 Comics
 ======
 
-![travis](http://travis-ci.org/arecker/Comics.svg?branch=master)
+[![Build Status](https://travis-ci.org/arecker/Comics.hs.svg?branch=master)](https://travis-ci.org/arecker/Comics.hs)
 
 A site for comics (obviously)
 
