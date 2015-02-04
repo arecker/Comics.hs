@@ -58,7 +58,7 @@ main = do
 
 
     notFound $ do
-      text "404, man"
+      S.text "404, man"
 
 
 getComic :: Comic -> Html
